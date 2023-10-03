@@ -1,0 +1,30 @@
+{
+    "htsgetConfig": {
+        "props": {
+            "port": "3033",
+            "host": "https://htsget.dev.gdi.lu/"
+        },
+        "variants": {
+            "enabled": true,
+            "dataSourceRegistry": {
+                "sources": [
+                    {
+                        "pattern": "^s3/(?P<accession>.*)$",
+                        "path": "https://download.dev.gdi.lu/files/{accession}"
+                    }
+                ]
+            }
+        },
+        "reads": {
+            "enabled": true,
+            "dataSourceRegistry": {
+                "sources": [
+                    {
+                        "pattern": "^s3/(?P<accession>.*)$",
+                        "path": "/mnt/gdi-synth-data-nfs/b1mg-rd-synthetic-data/bam_symlinks/{accession}"
+                    }
+                ]
+            }
+        }
+    }
+}
