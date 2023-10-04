@@ -1,0 +1,5 @@
+{:t {:footer "European Genomic Data Infrastructure"
+     :header {:title "GDI REMS"}
+     :login {:login [:img {:src "img/ls_login.png" :height "50px"}]
+             :intro [:div [:h5 "GDI Dataset Permission Management"] [:p "REMS is a service for managing dataset permissions. Test environment access requires group membership in Perun."]]
+             :intro2 "" :text "Please log in with Life Science AAI."}}}
