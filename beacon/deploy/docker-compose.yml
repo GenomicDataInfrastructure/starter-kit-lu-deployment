@@ -1,0 +1,102 @@
+version: '3.1'
+
+networks:
+  beacon-priv:
+  idp-priv:
+  pub:
+  my-app-network:
+    external: true
+
+services:
+
+  ###########################################
+  # beacon-ri-tools
+  ###########################################
+
+  beacon-ri-tools:
+    image: beacon2ri/beacon_reference_implementation:v2.0.0
+    hostname: beacon-ri-tools
+    networks:
+      - beacon-priv 
+    tty: true
+
+  ###########################################
+  # MongoDB Database
+  ###########################################
+
+  beacon-db:
+    image: mongo:5
+    hostname: mongo
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+      MONGO_INITDB_DATABASE: beacon
+    volumes:
+      - ./mongo-init/:/docker-entrypoint-initdb.d/:ro
+    networks:
+      - beacon-priv
+      - my-app-network
+
+  beacon-mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: example
+      ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
+    networks:
+      - beacon-priv
+
+  ###########################################
+  # Beacon
+  ###########################################
+
+  beacon:
+    build: ..
+    image: egarchive/beacon:2.0
+    hostname: beacon
+    container_name: beacon
+    volumes:
+      # - ../beacon:/beacon/beacon  # inject the code, so we see the modifications "live"
+      # - ../ui/static:/beacon/ui/static
+      # - ../ui/templates:/beacon/ui/templates
+      - ./conf.py:/beacon/beacon/conf.py
+      - ./logger.yml:/beacon/beacon/logger.yml
+      - ./ontologies:/beacon/ontologies
+    ports:
+      - "5050:5050"
+    networks:
+      - beacon-priv
+      - pub
+      - idp-priv
+      - my-app-network
+    working_dir: '/beacon'
+    entrypoint: ['python','-m','beacon']
+    # entrypoint: ['/bin/sleep','100000000']
+
+  ###########################################
+  # Dummy Permissions server
+  ###########################################
+  
+  beacon-permissions:
+    image: egarchive/beacon:2.0
+    hostname: beacon-permissions
+    container_name: beacon-permissions
+    volumes:
+      - ../permissions/:/beacon/permissions/  # inject the code, so we see the modifications "live"
+      - ./logger.yml:/beacon/logger.yml
+    ports:
+      - "5051:5051"
+    networks:
+      - beacon-priv
+      - pub
+      - idp-priv
+      - my-app-network
+    #entrypoint: ['/bin/sleep','100000000']
+    working_dir: '/beacon'
+    entrypoint: ['python','-m', 'permissions']
+
