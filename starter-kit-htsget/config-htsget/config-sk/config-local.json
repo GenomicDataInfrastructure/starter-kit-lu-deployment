@@ -2,7 +2,7 @@
     "htsgetConfig": {
         "props": {
             "port": "3033",
-            "host": "https://htsget.dev.gdi.lu/"
+            "host": "https://htsget.temp.gdi.lu/"
         },
         "variants": {
             "enabled": true,
@@ -10,7 +10,7 @@
                 "sources": [
                     {
                         "pattern": "^s3/(?P<accession>.*)$",
-                        "path": "https://download.dev.gdi.lu/files/{accession}"
+                        "path": "https://download.temp.gdi.lu/files/{accession}"
                     }
                 ]
             }
