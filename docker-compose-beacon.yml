@@ -1,0 +1,2 @@
+include:
+- beacon/deploy/docker-compose.yml
