@@ -1,0 +1,23 @@
+
+services:
+  nginx:
+    container_name: nginx
+    image: nginx:latest
+    ports:
+      - "8800:80"
+      - "4433:443"
+    volumes:
+      - ./nginx:/etc/nginx
+    networks:
+      - deploy_beacon-priv
+      - starter-kit-htsget_htsget-priv
+      - rems_rems-priv 
+    restart: unless-stopped
+
+networks:
+  deploy_beacon-priv:
+    external: true
+  starter-kit-htsget_htsget-priv:
+    external: true
+  rems_rems-priv:
+    external: true
