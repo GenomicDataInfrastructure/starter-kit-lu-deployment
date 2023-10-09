@@ -1,0 +1,4 @@
+include:
+- beacon/deploy/docker-compose.yml
+- rems/docker-compose.yml
+- storage-and-interfaces/docker-compose.yml
