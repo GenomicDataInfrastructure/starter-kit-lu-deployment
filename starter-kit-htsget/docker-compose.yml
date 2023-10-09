@@ -8,6 +8,7 @@ services:
       #- /config/config.json
       - /config/config-sk/config-local.json
     networks:
+      - htsget-priv
       - public
       - secure
     ports:
@@ -132,3 +133,4 @@ volumes:
 networks:
   public:
   secure:
+  htsget-priv:

@@ -19,6 +19,8 @@ services:
       - ./ls_login.png:/rems/theme/public/img/ls_login.png
       - ./private-key.jwk:/rems/keys/private-key.jwk
       - ./public-key.jwk:/rems/keys/public-key.jwk
+    networks:
+      - rems-priv
 
   rems_db:
     container_name: rems_db
@@ -50,3 +52,6 @@ services:
 volumes:
   remsdb:
     driver: local
+
+networks:
+  rems-priv:
