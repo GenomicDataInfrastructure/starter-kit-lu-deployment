@@ -5,7 +5,7 @@ This repository was created to help you get started with GDI Starter Kit, based 
 
 We would like to provide you with an all-in-one Docker Compose script and set of instructions/notes to deploy the components of the Starter Kit (<https://github.com/GenomicDataInfrastructure>). 
 Generally, each Starter Kit repository already contains a readme file with exact steps to be taken to successfully deploy.
-In this repository, we cloned all the original source code and modified it to have only one compose script. 
+In this repository, we cloned all the original source code and modified them to have only one compose script. You can review the individual readme files to check the relevant notes and how-to instructions.
 
 ## Status
 This project is not complete yet. The instructions should get you Beacon, REMS and htsget running. Storages and interfaces part is not yet complete at the moment of writing this readme.
@@ -16,6 +16,7 @@ This project is not complete yet. The instructions should get you Beacon, REMS a
 | :---        |    :----:   |          :--- |
 | REMS | [link](https://github.com/GenomicDataInfrastructure/starter-kit-rems/tree/main) | Resource Entitlement Management System to manage access rights to datasets |
 | Beacon | [link](https://github.com/GenomicDataInfrastructure/starter-kit-beacon2-ri-api) | A discoverability service - an API to query for variants, individuals etc. |
+| LS:AAI mock | [link](https://github.com/GenomicDataInfrastructure/starter-kit-lsaai-mock) | Mock of Life Sciences AAI. Not needed if you created LS:AAI OIDC client. |
 | Storages and Interfaces | [link](https://github.com/GenomicDataInfrastructure/starter-kit-storage-and-interfaces) | Set of components related to storage of datasets (e.g. minio)  |
 | htsget | [link](https://github.com/GenomicDataInfrastructure/starter-kit-htsget) | Server to stream sensitive genomics data |
 
@@ -51,7 +52,7 @@ docker compose -f docker-compose-rems.yml down
 docker compose -f docker-compose-beacon.yml down
 ```
 
-## Modifications
+## Modifications and notes
 If you are interested in what modifications were made compared to the original repositories, take a look in the relevant readme files:
-* [Beacon](-/blob/main/README_BEACON.md)
 * [REMS](-/blob/main/README_REMS.md)
+* [Beacon](-/blob/main/README_BEACON.md)
