@@ -97,6 +97,7 @@ services:
 
 networks:
   beacon-priv:
+    name: beacon-priv 
   idp-priv:
   pub:
   my-app-network:

@@ -36,7 +36,7 @@ beacon_handovers = [
             'label': 'Request data through REMS'
         },
         'note': 'Request data through REMS',
-        'url': 'https://rems.dev.gdi.lu/catalogue'
+        'url': 'https://rems.temp.gdi.lu/catalogue'
     }
 ]
 ```
