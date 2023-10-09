@@ -1,0 +1,2 @@
+include:
+- storage-and-interfaces/docker-compose.yml

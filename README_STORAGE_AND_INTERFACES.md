@@ -1,0 +1,3 @@
+# Steps to reproduce this SaI setup
+1. Clone [the Starter Kit SaI repository](https://github.com/GenomicDataInfrastructure/starter-kit-storage-and-interfaces) (`https://github.com/GenomicDataInfrastructure/starter-kit-storage-and-interfaces`) into `storage-and-interfaces` directory.
+2. Follow the project's readme file to create `config.yaml` and `iss.json` files in the `config` directory. Take a look on the example files in this repository. 
