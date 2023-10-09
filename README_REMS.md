@@ -10,8 +10,8 @@ python generate_jwks.py
 ```
 5. Run:
 ```
-docker compose up -d rems_db
-docker compose run --rm -e CMD="migrate" rems_app
-docker compose up -d rems_app
+docker compose -f docker-compose-rems.yml up -d rems_db
+docker compose -f docker-compose-rems.yml run --rm -e CMD="migrate" rems_app
+docker compose -f docker-compose-rems.yml up -d rems_app
 ```
 6. Consecutive runs can be started with `docker compose up -d`
