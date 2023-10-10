@@ -1,0 +1,18 @@
+[
+    {
+        "iss": "https://rems.dev.gdi.lu",
+        "jku": "https://rems.dev.gdi.lu/api/jwk"
+    },
+    {
+        "iss": "https://auth.dev.gdi.lu",
+        "jku": "https://auth.dev.gdi.lu/api/jwk"
+    },
+    {
+        "iss": "https://login.elixir-czech.org/oidc/",
+        "jku": "https://login.elixir-czech.org/oidc/jwk"
+    },
+    {
+        "iss": "https://rems.dev.gdi.lu/",
+        "jku": "https://rems.dev.gdi.lu/api/jwk"
+    }
+]
