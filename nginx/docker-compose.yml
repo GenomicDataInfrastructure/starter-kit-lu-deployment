@@ -9,15 +9,25 @@ services:
     volumes:
       - ./nginx:/etc/nginx
     networks:
-      - deploy_beacon-priv
-      - starter-kit-htsget_htsget-priv
-      - rems_rems-priv 
+      - beacon-priv
+      - htsget-priv
+      - rems-priv 
+      - auth-priv
+      - download-priv
+      - s3inbox-priv
     restart: unless-stopped
 
 networks:
-  deploy_beacon-priv:
-    external: true
-  starter-kit-htsget_htsget-priv:
-    external: true
-  rems_rems-priv:
-    external: true
+  beacon-priv:
+    name: beacon-priv 
+  htsget-priv:
+    name: htsget-priv
+  rems-priv:
+    name: rems-priv
+  auth-priv:
+    name: auth-priv
+  download-priv:
+    name: download-priv
+  s3inbox-priv:
+    name: s3inbox-priv
+  
