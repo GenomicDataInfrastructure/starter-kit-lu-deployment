@@ -52,6 +52,14 @@ docker compose -f docker-compose-rems.yml down
 docker compose -f docker-compose-beacon.yml down
 ```
 
+### Spinning up Nginx proxy
+
+Make sure the GDI components are up and running beforehand.
+```
+docker compose -f docker-compose-nginx.yml up -d
+```
+
+
 ## Modifications and notes
 If you are interested in what modifications were made compared to the original repositories, take a look in the relevant readme files:
 * [REMS](-/blob/main/README_REMS.md)

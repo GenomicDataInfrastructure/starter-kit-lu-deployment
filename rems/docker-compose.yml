@@ -55,3 +55,4 @@ volumes:
 
 networks:
   rems-priv:
+    name: rems-priv
