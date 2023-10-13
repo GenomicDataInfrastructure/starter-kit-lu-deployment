@@ -1,0 +1,2 @@
+include:
+- starter-kit-htsget/docker-compose.yml
