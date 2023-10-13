@@ -18,12 +18,12 @@ This repository contains out-of-the-box self signed certificates for demonstrati
 
 ## Endpoints
 
-`https://beacon.temp.gdi.lu:4433` <br>
-`https://htsget.temp.gdi.lu:4433` <br>
-`https://rems.temp.gdi.lu:4433` <br>
-`https://sk.temp.gdi.lu:4433` <br>
-`https://login.temp.gdi.lu:4433` <br>
-`https://download.temp.gdi.lu:4433` <br>
+`https://beacon.temp.gdi.lu:4433` 
+`https://htsget.temp.gdi.lu:4433` 
+`https://rems.temp.gdi.lu:4433` 
+`https://sk.temp.gdi.lu:4433` 
+`https://login.temp.gdi.lu:4433` 
+`https://download.temp.gdi.lu:4433` 
 `https://inbox.temp.gdi.lu:4433`
 
 
@@ -31,11 +31,11 @@ This repository contains out-of-the-box self signed certificates for demonstrati
 
 Assuming the current working directory is `~/starter-kit-lu-deployment`:
 
-1. Generate Diffie-Hellman parameters:<br>
+1. Generate Diffie-Hellman parameters:
    
 `$ openssl dhparam -out ./nginx/nginx/dhparam.pem 2048`
 
-2. Generate certificates:<br>
+2. Generate certificates:
    
 `$ openssl req -x509 -newkey rsa:4096 -keyout ssl/wildcard.temp.gdi.lu.key -out ./nginx/nginx/ssl/wildcard.temp.gdi.lu.crt -sha256 -days 365`
 

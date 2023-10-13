@@ -48,6 +48,7 @@ services:
     networks:
       - public
       - my-app-network
+      - auth-priv
     restart: always
 
   rabbitmq:
@@ -149,6 +150,7 @@ services:
       - public
       - secure
       - my-app-network
+      - download-priv
     ports:
       - 8443:8443
     restart: always
@@ -289,6 +291,7 @@ services:
       - public
       - secure
       - my-app-network
+      - s3inbox-priv
     ports:
       - "8000:8000"
     restart: always
@@ -307,3 +310,9 @@ networks:
   # required for allowing auth to connect to ls-aai-mock
   my-app-network:
     name: my-app-network
+  auth-priv:
+    name: auth-priv
+  download-priv:
+    name: download-priv
+  s3inbox-priv:
+    name: s3inbox-priv
