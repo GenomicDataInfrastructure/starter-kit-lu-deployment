@@ -13,14 +13,14 @@ In this repository, we cloned all the original source code and modified them to 
 
 ## Status
 This project is ongoing and not fully operational yet. 
-The instructions should get you a running Beacon, REMS, htsget, and a nginx reverse proxy.
+The instructions should get you a running Beacon, Molgenis, htsget, cBioPortal, and a nginx reverse proxy.
 Running Storages and interfaces and loading the data might require some more hacking.
 
 ## Components
 
 | Component | Original repository | Short description |
 | :---        |    :----:   |          :--- |
-| REMS | [link](https://github.com/GenomicDataInfrastructure/starter-kit-rems/tree/main) | Resource Entitlement Management System to manage access rights to datasets |
+| Molgenis | [link](https://github.com/molgenis/) |  Open source solutions for scientific data |
 | Beacon | [link](https://github.com/GenomicDataInfrastructure/starter-kit-beacon2-ri-api) | A discoverability service - an API to query for variants, individuals etc. |
 | LS:AAI mock | [link](https://github.com/GenomicDataInfrastructure/starter-kit-lsaai-mock) | Mock of Life Sciences AAI. Not needed if you created LS:AAI OIDC client. |
 | Storages and Interfaces | [link](https://github.com/GenomicDataInfrastructure/starter-kit-storage-and-interfaces) | Set of components related to storage of datasets (e.g. minio)  |
