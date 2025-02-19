@@ -1,0 +1,27 @@
+# crypth4gh private key
+C4GH_KEYPATH=
+
+### services ###
+
+# rabbitmq
+rabbitmq_MQ_PASSWORD=
+rabbitmq_MQ_USER=
+
+# postgres
+postgres_POSTGRES_PASSWORD=
+
+# These credentials can be created manually 
+# or with the use of the make_credentials script
+# once the RabbitMQ and Postgres containers are running
+
+download_DB_PASSWORD=
+finalize_BROKER_PASSWORD=
+finalize_DB_PASSWORD=
+ingest_BROKER_PASSWORD=
+ingest_DB_PASSWORD=
+mapper_BROKER_PASSWORD=
+mapper_DB_PASSWORD=
+verify_BROKER_PASSWORD=
+verify_DB_PASSWORD=
+inbox_BROKER_PASSWORD=
+inbox_DB_PASSWORD=

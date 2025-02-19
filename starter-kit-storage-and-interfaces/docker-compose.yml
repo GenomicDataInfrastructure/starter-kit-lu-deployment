@@ -1,0 +1,303 @@
+# Services auth, download and s3inbox in this file will try to connect to the ls-aai-mock service.
+# Remember to start the later while this stack is being deployed. See documentation for more details.
+
+services:
+  credentials:
+    container_name: credentials
+    command:
+      - "/bin/sh"
+      - "/scripts/make_credentials.sh"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    environment:
+      - PGPASSWORD=${credentials_PGPASSWORD}
+    image: python:3.10-slim
+    networks:
+      - secure
+    volumes:
+      - ./scripts:/scripts
+      - shared:/shared
+      - cacert:/cacert
+
+  auth:
+    container_name: auth
+    image: ghcr.io/neicnordic/sensitive-data-archive:v0.2.94-auth
+    depends_on:
+      credentials:
+        condition: service_completed_successfully
+    environment:
+      - ELIXIR_ID=${auth_ELIXIR_ID}
+      - ELIXIR_PROVIDER=${auth_ELIXIR_PROVIDER}
+      - ELIXIR_SECRET=${auth_ELIXIR_SECRET}
+      - ELIXIR_JWKPATH=jwk
+      - ELIXIR_REDIRECTURL=${auth_ELIXIR_REDIRECTURL}
+      - LOG_LEVEL=info
+      - PUBLICFILE=/shared/c4gh.pub.pem
+      - RESIGNJWT=false
+      - S3INBOX=http://localhost:8000
+      - LOG_LEVEL=debug
+    extra_hosts:
+      - ${DOCKERHOST:-localhost}:host-gateway
+    volumes:
+      - shared:/shared
+    ports:
+      - 8085:8080
+    restart: always
+
+  rabbitmq:
+    container_name: rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_PASS=${rabbitmq_MQ_PASSWORD}
+      - RABBITMQ_DEFAULT_USER=${rabbitmq_MQ_USER}
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "sh",
+          "-c",
+          "rabbitmq-diagnostics -q check_running && rabbitmq-diagnostics -q check_local_alarms"
+        ]
+      interval: 5s
+      timeout: 20s
+      retries: 20
+    image: ghcr.io/neicnordic/sensitive-data-archive:v0.2.94-rabbitmq
+    networks:
+      - secure
+    ports:
+      - 15672:15672
+    restart: always
+
+  postgres:
+    container_name: postgres
+    environment:
+      - POSTGRES_PASSWORD=${postgres_POSTGRES_PASSWORD}
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "pg_isready",
+          "-h",
+          "localhost",
+          "-U",
+          "postgres"
+        ]
+      interval: 5s
+      timeout: 20s
+      retries: 20
+    image: ghcr.io/neicnordic/sensitive-data-archive:v0.2.94-postgres
+    networks:
+      - secure
+    restart: always
+    volumes:
+      - pgdatasni:/var/lib/postgresql/data
+
+  s3:
+    command: server /data  --console-address ":9001"
+    container_name: s3
+    environment:
+      - MINIO_ROOT_USER=${s3_MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${s3_MINIO_ROOT_PASSWORD}
+      - MINIO_SERVER_URL=${s3_MINIO_SERVER_URL}
+      - MINIO_BROWSER_REDIRECT_URL=${s3_MINIO_BROWSER_URL}
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "curl",
+          "-fq",
+          "http://localhost:9000/minio/health/live"
+        ]
+      interval: 5s
+      timeout: 20s
+      retries: 3
+    image: minio/minio:RELEASE.2023-10-25T06-33-25Z
+    networks:
+      - secure
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    restart: always
+    volumes:
+      - s3data:/data3
+      - /mnt/gdi-synth-data-nfs/docker_volumes/s4data:/data
+
+  ## data ingest pipeline
+  download:
+    command: sda-download
+    container_name: download
+    depends_on:
+      credentials:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      s3:
+        condition: service_healthy
+    environment:
+      - DB_PASSWORD=${download_DB_PASSWORD}
+      - DB_USER=${download_DB_USER}
+      - OIDC_CONFIGURATION_URL=${auth_ELIXIR_PROVIDER}.well-known/openid-configuration
+    extra_hosts:
+      - ${DOCKERHOST:-dockerhost}:host-gateway
+    image: ghcr.io/neicnordic/sensitive-data-archive:v0.2.94-download
+    networks:
+      - public
+      - secure
+    ports:
+      - 8443:8443
+    restart: always
+    volumes:
+      - ${CONFIG_FILEPATH}:/config.yaml
+      - ${ISS_FILEPATH}:/iss.json
+      - shared:/shared
+
+  finalize:
+    command: sda-finalize
+    container_name: finalize
+    depends_on:
+      credentials:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      s3:
+        condition: service_healthy
+    environment:
+      - BROKER_PASSWORD=${finalize_BROKER_PASSWORD}
+      - BROKER_QUEUE=${finalize_BROKER_QUEUE}
+      - BROKER_ROUTINGKEY=${finalize_BROKER_ROUTINGKEY}
+      - BROKER_USER=${finalize_BROKER_USER}
+      - DB_PASSWORD=${finalize_DB_PASSWORD}
+      - DB_USER=${finalize_DB_USER}
+    image: ghcr.io/neicnordic/sensitive-data-archive:v0.2.94
+    networks:
+      - secure
+    restart: always
+    volumes:
+      - ${CONFIG_FILEPATH}:/config.yaml
+
+  ingest:
+    command: sda-ingest
+    container_name: ingest
+    depends_on:
+      credentials:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      s3:
+        condition: service_healthy
+    environment:
+      - BROKER_PASSWORD=${ingest_BROKER_PASSWORD}
+      - BROKER_QUEUE=${ingest_BROKER_QUEUE}
+      - BROKER_ROUTINGKEY=${ingest_BROKER_ROUTINGKEY}
+      - BROKER_USER=${ingest_BROKER_USER}
+      - DB_PASSWORD=${ingest_DB_PASSWORD}
+      - DB_USER=${ingest_DB_USER}
+    image: ghcr.io/neicnordic/sensitive-data-archive:v0.2.94
+    networks:
+      - secure
+    restart: always
+    volumes:
+      - ${CONFIG_FILEPATH}:/config.yaml
+      - shared:/shared
+
+  mapper:
+    command: sda-mapper
+    container_name: mapper
+    depends_on:
+      credentials:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      s3:
+        condition: service_healthy
+    environment:
+      - BROKER_PASSWORD=${mapper_BROKER_PASSWORD}
+      - BROKER_QUEUE=${mapper_BROKER_QUEUE}
+      - BROKER_USER=${mapper_BROKER_USER}
+      - DB_PASSWORD=${mapper_DB_PASSWORD}
+      - DB_USER=${mapper_DB_USER}
+    image: ghcr.io/neicnordic/sensitive-data-archive:v0.2.94
+    networks:
+      - secure
+    restart: always
+    volumes:
+      - ${CONFIG_FILEPATH}:/config.yaml
+
+  verify:
+    command: sda-verify
+    container_name: verify
+    depends_on:
+      credentials:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      s3:
+        condition: service_healthy
+    environment:
+      - BROKER_PASSWORD=${verify_BROKER_PASSWORD}
+      - BROKER_QUEUE=${verify_BROKER_QUEUE}
+      - BROKER_ROUTINGKEY=${verify_BROKER_ROUTINGKEY}
+      - BROKER_USER=${verify_BROKER_USER}
+      - DB_PASSWORD=${verify_DB_PASSWORD}
+      - DB_USER=${verify_DB_USER}
+    image: ghcr.io/neicnordic/sensitive-data-archive:v0.2.94
+    networks:
+      - secure
+    restart: always
+    volumes:
+      - ${CONFIG_FILEPATH}:/config.yaml
+      - shared:/shared
+
+  s3inbox:
+    command: sda-s3inbox
+    container_name: s3inbox
+    depends_on:
+      credentials:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      s3:
+        condition: service_healthy
+    environment:
+      - BROKER_PASSWORD=${s3inbox_BROKER_PASSWORD}
+      - BROKER_ROUTINGKEY=${s3inbox_BROKER_ROUTINGKEY}
+      - BROKER_USER=${s3inbox_BROKER_USER}
+      - DB_PASSWORD=${s3inbox_DB_PASSWORD}
+      - DB_USER=${s3inbox_DB_USER}
+      #- SERVER_JWTPUBKEYURL=http://${DOCKERHOST:-dockerhost}:8080/oidc/jwk
+      - SERVER_JWTPUBKEYURL=${auth_ELIXIR_PROVIDER}jwk
+      
+    extra_hosts:
+      - ${DOCKERHOST:-dockerhost}:host-gateway
+    image: ghcr.io/neicnordic/sensitive-data-archive:v0.2.94
+    networks:
+      - public
+      - secure
+    ports:
+      - "8000:8000"
+    restart: always
+    volumes:
+      - ${CONFIG_FILEPATH}:/config.yaml
+      - shared:/shared
+
+volumes:
+  cacert:
+  pgdatasni:
+  shared:
+  s3data:
+
+networks:
+  public:
+  secure:

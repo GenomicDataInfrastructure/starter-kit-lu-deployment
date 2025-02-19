@@ -1,0 +1,117 @@
+services:
+  credentials:
+    extends:
+      file: docker-compose.yml
+      service: credentials
+
+  data_loader:
+    container_name: data_loader
+    command:
+      - "/bin/sh"
+      - "/load_data.sh"
+    depends_on:
+      s3inbox:
+        condition: service_started
+    image: python:3.10-alpine
+    networks:
+      - secure
+    volumes:
+      - ./scripts/load_data.sh:/load_data.sh
+      - shared:/shared
+      - cacert:/cacert
+
+  ### OIDC (LS-AAI in  a box)
+  oidc:
+    command:
+      - /bin/sh
+      - -c
+      - |
+        pip install --upgrade pip
+        pip install aiohttp Authlib joserfc requests
+        python -u /oidc.py
+    container_name: oidc
+    depends_on:
+      credentials:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python3", "-c", 'import requests; print(requests.get(url = "https://localhost:8080/jwk", verify="/shared/cert/ca.crt").text)']
+      interval: 5s
+      timeout: 10s
+      retries: 20
+    image: python:3.10-slim
+    networks:
+      - public
+    ports:
+      - "8080:8080"
+    restart: always
+    volumes:
+      - ./servers/oidc.py:/oidc.py
+      - shared:/shared
+  ###
+
+  rabbitmq:
+    extends:
+      file: docker-compose.yml
+      service: rabbitmq
+
+  postgres:
+    extends:
+      file: docker-compose.yml
+      service: postgres
+
+  s3:
+    extends:
+      file: docker-compose.yml
+      service: s3
+
+  ## data ingest pipeline
+  download:
+    extends:
+      file: docker-compose.yml
+      service: download
+    depends_on:
+      oidc:
+        condition: service_healthy
+    environment:
+      - OIDC_CONFIGURATION_URL=https://oidc:8080/.well-known/openid-configuration
+
+  finalize:
+    extends:
+      file: docker-compose.yml
+      service: finalize
+
+  ingest:
+    extends:
+      file: docker-compose.yml
+      service: ingest
+
+  mapper:
+    extends:
+      file: docker-compose.yml
+      service: mapper
+
+  verify:
+    extends:
+      file: docker-compose.yml
+      service: verify
+
+  s3inbox:
+    extends:
+      file: docker-compose.yml
+      service: s3inbox
+    environment:
+      - SERVER_JWTPUBKEYURL=https://oidc:8080/jwk
+    volumes:
+    - cacert:/etc/ssl/certs/
+
+volumes:
+  cacert:
+  pgdata:
+  shared:
+  s3data:
+
+networks:
+  public:
+  secure:
+  my-app-network:
+    name: my-app-network

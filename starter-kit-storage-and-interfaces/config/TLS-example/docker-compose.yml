@@ -1,0 +1,221 @@
+services:
+  auth:
+    container_name: auth
+    image: ghcr.io/neicnordic/sensitive-data-archive:v0.2.23-auth
+    networks:
+      - public
+    ports:
+      - 8282:8080
+    restart: always
+    volumes:
+      - ./config.yaml:/config.yaml
+      - ./auth:/certificates/
+
+  rabbitmq:
+    container_name: rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_PASS=${rabbitmq_MQ_PASSWORD}
+      - RABBITMQ_DEFAULT_USER=${rabbitmq_MQ_USER}
+      - RABBITMQ_SERVER_CERT=/certificates/tls.crt
+      - RABBITMQ_SERVER_KEY=/certificates/tls.key
+      # - RABBITMQ_SERVER_CACERT=/certificates/ca.crt  # uncomment if certificate is signed by a private PKI and "RABBITMQ_SERVER_VERIFY" is set
+      # - RABBITMQ_SERVER_VERIFY="verify_peer" # Require the clients to supply valid TLS certificates
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "sh",
+          "-c",
+          "rabbitmq-diagnostics -q check_running && rabbitmq-diagnostics -q check_local_alarms"
+        ]
+      interval: 5s
+      timeout: 20s
+      retries: 20
+    image: ghcr.io/neicnordic/sensitive-data-archive:v0.2.23-rabbitmq
+    networks:
+      - secure
+    ports:
+      - 16471:16471 # TLS port for management UI
+    restart: always
+    volumes:
+      - mqdata:/var/lib/rabbitmq
+      - ./rabbitmq:/certificates
+
+  postgres:
+    container_name: postgres
+    environment:
+      - POSTGRES_PASSWORD=${postgres_POSTGRES_PASSWORD}
+      - POSTGRES_SERVER_CERT=/certificates/tls.crt
+      - POSTGRES_SERVER_KEY=/certificates/tls.key
+      - POSTGRES_SERVER_CACERT=/certificates/ca.crt # needed if certificate is signed by a private PKI
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "pg_isready",
+          "-h",
+          "localhost",
+          "-U",
+          "postgres",
+          "-d",
+          "sda"
+        ]
+      interval: 5s
+      timeout: 20s
+      retries: 20
+    image: ghcr.io/neicnordic/sensitive-data-archive:v0.2.23-postgres
+    networks:
+      - secure
+    restart: always
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres:/certificates
+
+  download:
+    command: sda-download
+    container_name: download
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - DB_PASSWORD=${download_DB_PASSWORD}
+      - DB_USER=download
+    image: ghcr.io/neicnordic/sensitive-data-archive:v0.2.23-download
+    networks:
+      - public
+      - secure
+    ports:
+      - 8443:8443
+    restart: always
+    volumes:
+      - ./config.yaml:/config.yaml
+      - ./iss.json:/iss.json
+      - ${C4GH_KEYPATH}:/c4gh/gdi.sec.pem
+      - ./download:/certificates
+
+  ## data ingest pipeline
+  finalize:
+    command: sda-finalize
+    container_name: finalize
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - BROKER_PASSWORD=${finalize_BROKER_PASSWORD}
+      - BROKER_QUEUE=accession
+      - BROKER_ROUTINGKEY=completed
+      - BROKER_USER=finalize
+      - DB_PASSWORD=${finalize_DB_PASSWORD}
+      - DB_USER=finalize
+    image: ghcr.io/neicnordic/sensitive-data-archive:v0.2.23
+    networks:
+      - secure
+    restart: always
+    volumes:
+      - ./config.yaml:/config.yaml
+      - ./finalize:/certificates
+
+  ingest:
+    command: sda-ingest
+    container_name: ingest
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - BROKER_PASSWORD=${ingest_BROKER_PASSWORD}
+      - BROKER_QUEUE=ingest
+      - BROKER_ROUTINGKEY=archived
+      - BROKER_USER=ingest
+      - DB_PASSWORD=${ingest_DB_PASSWORD}
+      - DB_USER=ingest
+    image: ghcr.io/neicnordic/sensitive-data-archive:v0.2.23
+    networks:
+      - secure
+    restart: always
+    volumes:
+      - ./config.yaml:/config.yaml
+      - ${C4GH_KEYPATH}:/c4gh/gdi.sec.pem
+      - ./ingest:/certificates
+
+  mapper:
+    command: sda-mapper
+    container_name: mapper
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - BROKER_PASSWORD=${mapper_BROKER_PASSWORD}
+      - BROKER_QUEUE=mappings
+      - BROKER_USER=mapper
+      - DB_PASSWORD=${mapper_DB_PASSWORD}
+      - DB_USER=mapper
+    image: ghcr.io/neicnordic/sensitive-data-archive:v0.2.23
+    networks:
+      - secure
+    restart: always
+    volumes:
+      - ./config.yaml:/config.yaml
+      - ./mapper:/certificates
+
+  verify:
+    command: sda-verify
+    container_name: verify
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - BROKER_PASSWORD=${verify_BROKER_PASSWORD}
+      - BROKER_QUEUE=archived
+      - BROKER_ROUTINGKEY=verified
+      - BROKER_USER=verify
+      - DB_PASSWORD=${verify_DB_PASSWORD}
+      - DB_USER=verify
+    image: ghcr.io/neicnordic/sensitive-data-archive:v0.2.23
+    networks:
+      - secure
+    restart: always
+    volumes:
+      - ./config.yaml:/config.yaml
+      - ${C4GH_KEYPATH}:/c4gh/gdi.sec.pem
+      - ./verify:/certificates
+
+  s3inbox:
+    command: sda-s3inbox
+    container_name: s3inbox
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - BROKER_PASSWORD=${s3inbox_BROKER_PASSWORD}
+      - BROKER_ROUTINGKEY=inbox
+      - BROKER_USER=inbox
+      - DB_PASSWORD=${s3inbox_DB_PASSWORD}
+      - DB_USER=inbox
+    image: ghcr.io/neicnordic/sensitive-data-archive:v0.2.23
+    networks:
+      - public
+      - secure
+    ports:
+      - "8383:8000"
+    restart: always
+    volumes:
+      - ./config.yaml:/config.yaml
+      - ./s3inbox:/certificates
+
+volumes:
+  mqdata:
+  pgdata:
+
+networks:
+  public: # this network is where external traffic is routed in/out
+  secure: # this network is only for container to container communication
