@@ -1,4 +1,4 @@
-# About htsget
+# About htsget - not used in the last deployment, currently evaluating the necessity
 The htsget protocol was selected for the `Data Reception` part of the GDI starter kit. Htsget enables for retrieval of files from the storage-and-interfaces archive. The specification of the protocol can be found [here](http://samtools.github.io/hts-specs/htsget.html).
 
 The repository contains the implementation for the GDI starter kit, as well as a demo that can be used for understanding the product. Both solutions are packaged in the `docker-compose-htsget.yml` file. The major difference between the two implementations, is that the demo one can run on it's own, while the starter kit version requires some of the other GDI products in order to be functional.
@@ -15,7 +15,7 @@ The configuration for the htsget server should exist in the folder called `confi
 ## Running the services - Demo
 The demo profile of the docker compose, apart for the htsget server, contains a minio S3 that can be used as a storage backend and a data downloader that extracts a file in the `output` directory. Specifically, the S3 storage is being populated with the `NA12878.bam` file included in the `demo-data` folder of this repository. The data downloader is then setting the required environment variables and using `samtools` to make a request to the `htsget server`, which gives access to the requested file.
 
-In order to run the demo version of htsget, first follow the instructions about removing tls at the bottom of this file and then run
+In order to run the demo version of htsget, first copy `config-htsget/config-no-tls.json.example` to `config-htsget/config-no-tls.json`, then follow the instructions about removing tls at the bottom of this file and finally run
 ```sh
 docker compose -f docker-compose-htsget.yml --profile demo up
 ```
@@ -26,7 +26,7 @@ If you are interested in the commands used for extracting the data, you can chec
 ## Running the services - Starter kit version
 The htsget product of the starter kit depends on the storage-and-interfaces product. Specifically, the data served has to be ingested and stored in the archive included in the [storage-and-interfaces repository](https://github.com/GenomicDataInfrastructure/starter-kit-storage-and-interfaces). Therefore, in order to test the implementation, the two docker compose files (the storage-and-interfaces and the htsget) need to be started together, so that they share the same network and the different containers have access between them.
 
-To start the services, start the individual docker compose environments from their respective root directories:
+Begin by copying `config-htsget/config.json.example` to `config-htsget/config.json`. To start the services, start the individual docker compose environments from their respective root directories:
 ```sh
 starter-kit-storage-and-interfaces$ docker compose up -d
 starter-kit-htsget$ docker compose -f docker-compose-htsget.yml up -d
@@ -82,11 +82,11 @@ curl -k -s -S https://dockerhost:8080/tokens | jq -r '.[0]' > token.txt
 ```
 3. Finally get the file using
 ```sh
-samtools view https://server:3033/reads/s3/<dataset_id>/<file_path_without.c4gh>
+samtools view https://server:3000/reads/s3/<dataset_id>/<file_path_without.c4gh>
 ```
 where `dataset_id` and `file_path` are the results from the query to the database. For example, if you are using the data from the starter-kit-storage-and-interfaces repository, the command should be
 ```sh
-samtools view https://server:3033/reads/s3/EGAD74900000101/dummy_gdi.eu/NA12878.bam
+samtools view https://server:3000/reads/s3/EGAD74900000101/dummy_gdi.eu/NA12878.bam
 ```
 
 ### (Optional) Add data
@@ -102,9 +102,16 @@ Once the script has completed, the data should be loaded.
 ### TLS configuration
 In order to run the htsget with TLS enabled, the easiest way is to use the storage-and-interfaces docker compose, which creates the certificates, and point to the shared volume where they rely.
 
-If you want to start the docker compose without tls, 
+If you want to start the docker compose without tls,
 1. remove the line `- starter-kit-storage-and-interfaces_shared:/shared` from the docker-compose-htsget.yml.
 1. remove the `starter-kit-storage-and-interfaces_shared:` and `external: true` from the docker-compose-htsget.yml volumes.
 1. remove the `"serverCert": "/shared/cert/server.crt",` and `"serverKey": "/shared/cert/server.key"` configuration from the config-htsget/config.json file.
 1. remove the line `volumes:` and `- starter-kit-storage-and-interfaces_shared:/shared` lines from the samtools client service of the docker-compose-htsget.yml.
 
+
+
+## Lux notes
+
+```
+curl https://htsget.dev.gdi.lu/variants/GDIF002FY
+```

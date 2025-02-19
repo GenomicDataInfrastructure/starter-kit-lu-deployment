@@ -1,73 +1,69 @@
 services:
-  htsget-server:
+  server:
     image: harbor.nbis.se/gdi/htsget-refserver:0.1.0
-    container_name: htsget-server
+    container_name: htsgetserver
     command:
       - /usr/src/app/htsget-refserver
       - -config
-      #- /config/config.json
-      - /config/config-sk/config-local.json
+      - /config/config.json
     networks:
-      - htsget-priv
       - public
       - secure
     ports:
-      - 3033:3033
+      - 3033:3000
     volumes:
       # If you want to start the docker compose without tls, remove the line below,
       # remove the starter-kit-storage-and-interfaces_shared volume from the bottom
-      # of the file and the relevant configuration from the config-htsget/config.json 
+      # of the file and the relevant configuration from the config-htsget/config.json
       # file, which are the lines for serverCert and serverKey.
       # The TLS version assumes that this compose file is running along with the
       # storage and interfaces.
       # If you want to run the htsget with TLS but without the storage and interfaces,
       # add the certificates in the volume below
-
       - starter-kit-storage-and-interfaces_shared:/shared
-      # - /mnt:/mnt
-      - ./config-htsget:/config
+      - ./config-htsget:/config  # copy any *.json.example files to *.json beforehand
       - ./logs:/logs
-    # extra_hosts:
-    #   - dockerhost:host-gateway
+      - /mnt:/mnt
+    extra_hosts:
+    - dockerhost:host-gateway
 
   client:
     image: python:3.11-slim
-    container_name: htsget-client
+    container_name: htsgetclient
     networks:
       - public
       - secure
     command:
       - /bin/bash
       - -c
-      - apt update; apt install -y curl; if ! which htsget >/dev/null; then pip install htsget; fi; while true; do sleep 250; done
-    # extra_hosts:
-    #   - dockerhost:host-gateway
-
+      - apt update; apt install -y curl;
+        if ! which htsget >/dev/null; then pip install htsget; fi;
+        while true; do sleep 250; done
+    extra_hosts:
+    - dockerhost:host-gateway
+  
   samtools:
     image: staphb/samtools:1.17
     container_name: samtools-client
-    environment:
-      - CURL_CA_BUNDLE=/shared/cert/ca.crt
-      - HTS_ALLOW_UNENCRYPTED_AUTHORIZATION_HEADER="I understand the risks"
-      - HTS_AUTH_LOCATION=token.txt
     networks:
       - public
       - secure
     command:
       - /bin/bash
-      - -c
-      - apt update; apt install -y curl jq; while true; do sleep 250; done
+      - -c 
+      - apt update; apt install -y curl jq;
+        while true; do sleep 250; done
     volumes:
       - starter-kit-storage-and-interfaces_shared:/shared
-    # extra_hosts:
-    #   - dockerhost:host-gateway
-
+    extra_hosts:
+    - dockerhost:host-gateway
+  
   s3public:
-    profiles: [ "demo" ]
+    profiles: ["demo"]
     command: server /data --console-address ":9001"
     container_name: s3public
     depends_on:
-      htsget-server:
+      server:
         condition: service_started
     environment:
       - MINIO_ROOT_USER=access
@@ -93,9 +89,9 @@ services:
     restart: always
     volumes:
       - s3pubdata:/data
-
+  
   createbucket:
-    profiles: [ "demo" ]
+    profiles: ["demo"]
     image: minio/mc
     container_name: mc-s3
     depends_on:
@@ -104,12 +100,19 @@ services:
     networks:
       - secure
     entrypoint: >
-      /bin/sh -c " sleep 10; /usr/bin/mc -q config host add s3 http://s3public:9000 access secretkey; /usr/bin/mc -q mb s3/inbox; /usr/bin/mc anonymous set public s3/inbox; /usr/bin/mc cp /data/NA12878.bam s3/inbox/NA12878.bam; exit 0; "
+      /bin/sh -c "
+      sleep 10;
+      /usr/bin/mc -q config host add s3 http://s3public:9000 access secretkey;
+      /usr/bin/mc -q mb s3/inbox;
+      /usr/bin/mc anonymous set public s3/inbox;
+      /usr/bin/mc cp /data/NA12878.bam s3/inbox/NA12878.bam;
+      exit 0;
+      "
     volumes:
       - ./demo-data:/data
-
+    
   data_downloader:
-    profiles: [ "demo" ]
+    profiles: ["demo"]
     image: staphb/samtools:1.17
     container_name: data-downloader
     depends_on:
@@ -120,18 +123,21 @@ services:
       - secure
     command:
       - /bin/bash
-      - -c
-      - export HTS_ALLOW_UNENCRYPTED_AUTHORIZATION_HEADER="I understand the risks"; export HTS_AUTH_LOCATION=token.txt; echo "some-token" > token.txt; apt update; apt install -y curl jq; samtools view -b http://htsget-server:3033/reads/pub/NA12878.bam > NA12878.bam; exit 0;
+      - -c 
+      - export HTS_ALLOW_UNENCRYPTED_AUTHORIZATION_HEADER="I understand the risks";
+        export HTS_AUTH_LOCATION=token.txt;
+        echo "some-token" > token.txt;
+        apt update; apt install -y curl jq;
+        samtools view -b http://server:3033/reads/pub/NA12878.bam > NA12878.bam;
+       exit 0;
     volumes:
       - ./output:/data
 
 volumes:
   s3pubdata:
   starter-kit-storage-and-interfaces_shared:
-    external: false
+    external: true
 
 networks:
   public:
   secure:
-  htsget-priv:
-    name: htsget-priv
