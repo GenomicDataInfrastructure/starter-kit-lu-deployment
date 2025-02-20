@@ -32,54 +32,16 @@ While a reverse proxy is not a part of original Starter Kit, we added it for the
 
 ### Preparatory
 ```
-# Create a docker network
+# Create a docker network - if needed
 docker network create my-app-network
-
-# Create and prepare REMS database
-docker compose -f docker-compose-rems.yml up -d rems_db
-docker compose -f docker-compose-rems.yml run --rm -e CMD="migrate" rems_app
 ```
 
-### Starting the services for the first time
-(Assuming that the REMS database is up)
-```
-docker compose -f docker-compose-rems.yml up -d rems_app
-docker compose -f docker-compose-beacon.yml up -d
-docker compose -f docker-compose-htsget.yml up -d
-docker compose -f docker-compose-storage-and-interfaces.yml up -d
-docker compose -f docker-compose-nginx.yml up -d
-```
-
-**Note: Storages and interfaces project will require additional steps** which are not yet fully documented here. Please find some our notes in the _README_STORAGE_AND_INTERFACES.md_. Moreover, getting the synthetic data in will also require some additional work.
-
-### Starting the services another time
-(Assuming that the REMS database is down)
-```
-docker compose -f docker-compose-rems.yml up -d
-docker compose -f docker-compose-beacon.yml up -d
-docker compose -f docker-compose-htsget.yml up -d
-docker compose -f docker-compose-storage-and-interfaces.yml up -d
-docker compose -f docker-compose-nginx.yml up -d
-```
-
-Alternatively, you can use:
+You can use:
 ```
 docker compose -f docker-compose.yml up -d
 ```
-
-### Stopping the services
-```
-docker compose -f docker-compose-rems.yml down
-docker compose -f docker-compose-beacon.yml down
-docker compose -f docker-compose-htsget.yml down
-docker compose -f docker-compose-storage-and-interfaces.yml down
-docker compose -f docker-compose-nginx.yml down
-```
-
-```
 docker compose -f docker-compose.yml down
 ```
-
 
 ## Modifications and notes
 If you are interested in what modifications were made compared to the original repositories, take a look in the relevant readme files, e.g.:
