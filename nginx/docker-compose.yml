@@ -1,33 +1,21 @@
+version: "3.9"
 
 services:
   nginx:
-    container_name: nginx
     image: nginx:latest
-    ports:
-      - "8800:80"
-      - "4433:443"
-    volumes:
-      - ./nginx:/etc/nginx
-    networks:
-      - beacon-priv
-      - htsget-priv
-      - rems-priv 
-      - auth-priv
-      - download-priv
-      - s3inbox-priv
     restart: unless-stopped
+    
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/ssl:/etc/nginx/ssl
+    ports:
+      - "80:80"
+      - "443:443" 
+    networks:
+      - gdi-node-net
+
 
 networks:
-  beacon-priv:
-    name: beacon-priv 
-  htsget-priv:
-    name: htsget-priv
-  rems-priv:
-    name: rems-priv
-  auth-priv:
-    name: auth-priv
-  download-priv:
-    name: download-priv
-  s3inbox-priv:
-    name: s3inbox-priv
-  
+  gdi-node-net:
+    name: gdi-node-net
