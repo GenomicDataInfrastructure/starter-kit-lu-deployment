@@ -20,7 +20,7 @@ Running Storages and interfaces and loading the data might require some more hac
 
 | Component | Original repository | Short description |
 | :---        |    :----:   |          :--- |
-| Molgenis | [link](https://github.com/molgenis/) |  Open source solutions for scientific data |
+| Molgenis Emx2 | [link](https://github.com/molgenis/molgenis-emx2.git) |  Open source solutions for scientific data |
 | Beacon | [link](https://github.com/GenomicDataInfrastructure/starter-kit-beacon2-ri-api) | A discoverability service - an API to query for variants, individuals etc. |
 | LS:AAI mock | [link](https://github.com/GenomicDataInfrastructure/starter-kit-lsaai-mock) | Mock of Life Sciences AAI. Not needed if you created LS:AAI OIDC client. |
 | Storages and Interfaces | [link](https://github.com/GenomicDataInfrastructure/starter-kit-storage-and-interfaces) | Set of components related to storage of datasets (e.g. minio)  |
