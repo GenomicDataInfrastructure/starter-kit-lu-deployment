@@ -1,0 +1,4 @@
+name,description,type,files,belongsToDataset
+GDI-LU-D-T0001-vcf,VCF locations,File,"SIM007-N_germline_golden.vcf.gz,SIM007-N_germline_golden.vcf.gz.tbi,SIM007-T_germline_golden.vcf.gz,SIM007-T_germline_golden.vcf.gz.tbi",GDI-LU-D-T0001
+GDI-LU-D-T0001-fastq,FASTQ locations,File,"SIM007-N_S02_L001_R1_001.fastq.gz,SIM007-N_S02_L001_R2_001.fastq.gz,SIM007-N_S02_L002_R1_001.fastq.gz,SIM007-N_S02_L002_R2_001.fastq.gz,SIM007-N_S02_L003_R1_001.fastq.gz,SIM007-N_S02_L003_R2_001.fastq.gz,SIM007-N_S02_L004_R1_001.fastq.gz,SIM007-N_S02_L004_R2_001.fastq.gz,SIM007-T_S04_L001_R1_001.fastq.gz,SIM007-T_S04_L001_R2_001.fastq.gz,SIM007-T_S04_L002_R1_001.fastq.gz,SIM007-T_S04_L002_R2_001.fastq.gz,SIM007-T_S04_L003_R1_001.fastq.gz,SIM007-T_S04_L003_R2_001.fastq.gz,SIM007-T_S04_L004_R1_001.fastq.gz,SIM007-T_S04_L004_R2_001.fastq.gz",GDI-LU-D-T0001
+GDI-LU-D-T0001-bam,BAM locations,File,"SIM007-N.bam,SIM007-T.bam,SIM007-N.bam.bai,SIM007-T.bam.bai",GDI-LU-D-T0001

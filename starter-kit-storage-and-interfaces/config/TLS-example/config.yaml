@@ -1,0 +1,105 @@
+app: # this is for download
+  host: "0.0.0.0"
+  port: "8443"
+  servercert: "/certificates/fullchain.pem"
+  serverkey: "/certificates/privkey.pem"
+
+archive:
+  type: "s3"
+  url: ""
+#  port: only needed if port is not 80 or 443
+  accesskey: ""
+  secretkey: ""
+  bucket: "archive"
+  chunksize: 32
+
+broker:
+  host: "rabbitmq"
+  port: 5671 # This is the default SSL port
+  # user: "" # dont set, this should be unique for each service
+  # password: "" # dont set, this should be unique for each service
+  vhost: "sda"
+  # queue: "" # dont set, this is unique for each service
+  exchange: "sda"
+  # routingKey: "" # dont set, this is unique for each service
+  routingError: "error"
+  ssl: "true"
+  cacert: /certificates/ca.crt # if certificates are signed by an private PKI
+  # verifyPeer: "false" 
+# If verifyPeer is true clientKey and clientCert needs to be set
+  # clientCert: /certificates/tls.crt
+  # clientKey: /certificates/tls.key
+
+c4gh:
+  passphrase: ""
+  filepath: "/c4gh/gdi.sec.pem"
+
+db:
+  host: "postgres"
+  port: 5432
+  # user: "" # dont set, this should be unique for each service
+  # password: "" # dont set, this should be unique for each service
+  database: "sda"
+  sslmode: "verify-ca"
+  cacert: /certificates/ca.crt # if certificates are signed by an private PKI
+  clientCert: /certificates/tls.crt
+  clientKey: /certificates/tls.key
+
+
+elixir: # used by the auth service
+  id: "" # LS AAI client ID
+  secret: "" # LS AAI client secret
+  provider: "https://login.elixir-czech.org/oidc/"
+  jwkpath: "jwk"
+  redirectUrl: "" # public url to the auth endpoint
+
+inbox:
+  type: "s3"
+  url: ""
+#  port: only needed if port is not 80 or 443
+  accesskey: ""
+  secretkey: ""
+  bucket: "inbox"
+  chunksize: 32
+
+log:
+  level: "info"
+  format: "json"
+
+oidc:
+  configuration:
+    url: "https://login.elixir-czech.org/oidc/.well-known/openid-configuration"
+  trusted:
+    iss: "/iss.json"
+
+schema:
+  type: isolated
+
+server:
+  jwtpubkeyurl: "https://login.elixir-czech.org/oidc/jwk"
+  cert: "/certificates/fullchain.pem"
+  key: "/certificates/privkey.pem"
+
+session:
+  # session key expiration time in seconds
+  # default value = -1 for disabled state
+  # a positive integer enables sessions
+  # a negative integer disables sessions
+  expiration: 28800
+  # domain name must be set to the hostname (FQDN) of the service
+  domain: ""
+  # session cookie Secure value, if true, TLS must be active
+  # default value = true
+  secure: true
+  # session cookie HttpOnly value, if true, TLS must be active
+  # default value = true
+  httponly: true
+  # name of session cookie
+  # default value = sda_session_key
+  name: "sda_session_key"
+
+# these are used by the auth container
+s3inbox: "" # public URL to the s3inbox
+resignjwt: "false"
+infoText: "About GDI"
+infoUrl: "https://gdi.onemilliongenomes.eu/" # or this can be a national site where information about the available datasets can be found.

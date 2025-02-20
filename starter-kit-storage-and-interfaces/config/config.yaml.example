@@ -1,0 +1,76 @@
+app: # this is for download
+  host: "0.0.0.0"
+  port: "8443"
+
+archive:
+  type: "s3"
+  url: "http://s3"
+  port: 9000
+  accesskey: "access"
+  secretkey: "secretkey"
+  bucket: "archive"
+  chunksize: 32
+
+broker:
+  host: "rabbitmq"
+  port: 5672
+  user: ""
+  password: ""
+  vhost: "sda"
+  queue: ""
+  exchange: "sda"
+  routingKey: ""
+  routingError: "error"
+  ssl: "false"
+
+c4gh:
+  passphrase: "c4ghpass"
+  filepath: "/shared/c4gh.sec.pem"
+
+db:
+  host: "postgres"
+  port: 5432
+  user: ""
+  password: ""
+  database: "sda"
+  sslmode: "disable"
+
+inbox:
+  type: "s3"
+  url: "http://s3"
+  port: 9000
+  accesskey: "access"
+  secretkey: "secretkey"
+  bucket: "inbox"
+  chunksize: 32
+
+log:
+  level: "info"
+  format: "json"
+
+oidc:
+  # oidc configuration API must have values for "userinfo_endpoint" and "jwks_uri"
+  cacert: "/shared/cert/ca.crt"
+  trusted:
+    iss: "/iss.json"
+
+schema:
+  type: isolated
+
+session:
+  # session key expiration time in seconds
+  # default value = -1 for disabled state
+  # a positive integer enables sessions
+  # a negative integer disables sessions
+  expiration: 28800
+  # domain name must be set to the hostname (FQDN) of the service
+  domain: "localhost"
+  # session cookie Secure value, if true, TLS must be active
+  # default value = true
+  secure: true
+  # session cookie HttpOnly value, if true, TLS must be active
+  # default value = true
+  httponly: true
+  # name of session cookie
+  # default value = sda_session_key
+  name: "sda_session_key"

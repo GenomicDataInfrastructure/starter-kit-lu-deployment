@@ -1,35 +1,28 @@
 {
-  "htsgetConfig": {
-    "props": {
-      "port": "3000",
-      "host": "http://localhost/",
-      "logLevel": "debug",
-      "serverCert": "/shared/cert/server.crt",
-      "serverKey": "/shared/cert/server.key"
-    },
-    "reads": {
-      "enabled": true,
-      "dataSourceRegistry": {
-        "sources": [
-          {
-            "pattern": "^s3/(?P<accession>.*)$",
-            "path": "http://dockerhost:8443/s3/{accession}"
-          },
-          {
-            "pattern": "^pub/(?P<accession>.*)$",
-            "path": "http://s3public:9000/inbox/{accession}"
-          }
-        ]
-      },
-      "serviceInfo": {
-        "id": "org.ga4gh.htsget-reference.reads"
-      }
-    },
-    "variants": {
-      "enabled": false,
-      "serviceInfo": {
-        "id": "org.ga4gh.htsget-reference.variants"
-      }
+    "htsgetConfig": {
+        "props": {
+            "port": "3000",
+            "host": "https://htsget.dev.gdi.lu/"
+        },
+        "variants": {
+            "enabled": true,
+            "dataSourceRegistry": {
+                "sources": [
+                    {
+                        "pattern": "^Case1_index_chrom(?P<chrom>.*).g.vcf.gz$",
+                        "path": "/mnt/gdi-synth-data-nfs/b1mg-rd-synthetic-data/case1_index/Case1_IC.{chrom}.g.vcf.gz"
+                    }, 
+                    {
+                        "pattern": "^GDIF00(?P<accession>.*)$",
+                        "path": "/mnt/gdi-synth-data-nfs/b1mg-rd-synthetic-data/vcf_symlinks/{accession}"
+                    }, 
+                    {
+                        "pattern": "^variants/b1mg-rd-synthetic-data/(?P<accession>.*)$",
+                        "path": "https://minio.dev.gdi.lu/inbox/{accession}"
+                    }
+                ]
+
+            }
+        }
     }
-  }
 }

@@ -1,2 +1,2 @@
 include:
-- storage-and-interfaces/docker-compose.yml
+- starter-kit-storage-and-interfaces/docker-compose.yml
